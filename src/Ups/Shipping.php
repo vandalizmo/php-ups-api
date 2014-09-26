@@ -42,7 +42,7 @@ class Shipping extends Ups
      * Create a Shipment Confirm request (generate a digest)
      *
      * @param string $validation A UPS_Shipping::REQ_* constant (or null)
-     * @param stdClass $shipment Shipment data container.
+     * @param Entity\Shipment $shipment Shipment data container.
      * @param stdClass|null $labelSpecOpts LabelSpecification data. Optional
      * @param stdClass|null $receiptSpecOpts ReceiptSpecification data. Optional
      * @return stdClass
@@ -51,7 +51,6 @@ class Shipping extends Ups
     public function confirm($validation, $shipment, $labelSpecOpts = null, $receiptSpecOpts = null)
     {
         $request = $this->createConfirmRequest($validation, $shipment, $labelSpecOpts, $receiptSpecOpts);
-
         $response = $this->request($this->createAccess(), $request, $this->compileEndpointUrl($this->shipConfirmEndpoint));
 
         if ($response->Response->ResponseStatusCode == 0) {
@@ -69,7 +68,7 @@ class Shipping extends Ups
      * Creates a ShipConfirm request
      *
      * @param string $validation
-     * @param stdClass $shipment
+     * @param Entity\Shipment $shipment
      * @param stdClass|null $labelSpecOpts
      * @param stdClass|null $receiptSpecOpts
      * @return string
@@ -110,58 +109,58 @@ class Shipping extends Ups
 
         $shipperNode = $shipmentNode->appendChild($xml->createElement('Shipper'));
 
-        $shipperNode->appendChild($xml->createElement('Name', $shipment->Shipper->Name));
+        $shipperNode->appendChild($xml->createElement('Name', $shipment->getShipper()->getName()));
 
-        if (isset($shipment->Shipper->AttentionName)) {
-            $shipperNode->appendChild($xml->createElement('AttentionName', $shipment->Shipper->AttentionName));
+        if (isset($shipment->getShipper()->AttentionName)) {
+            $shipperNode->appendChild($xml->createElement('AttentionName', $shipment->getShipper()->AttentionName));
         }
 
-        if (isset($shipment->Shipper->CompanyDisplayableName)) {
-            $shipperNode->appendChild($xml->createElement('CompanyDisplayableName', $shipment->Shipper->CompanyDisplayableName));
+        if (isset($shipment->getShipper()->CompanyDisplayableName)) {
+            $shipperNode->appendChild($xml->createElement('CompanyDisplayableName', $shipment->getShipper()->CompanyDisplayableName));
         }
 
-        $shipperNode->appendChild($xml->createElement('ShipperNumber', $shipment->Shipper->ShipperNumber));
+        $shipperNode->appendChild($xml->createElement('ShipperNumber', $shipment->getShipper()->getShipperNumber()));
 
-        if (isset($shipment->Shipper->TaxIdentificationNumber)) {
-            $shipperNode->appendChild($xml->createElement('TaxIdentificationNumber', $shipment->Shipper->TaxIdentificationNumber));
+        if (isset($shipment->getShipper()->TaxIdentificationNumber)) {
+            $shipperNode->appendChild($xml->createElement('TaxIdentificationNumber', $shipment->getShipper()->getTaxIdentificationNumber()));
         }
 
-        if (isset($shipment->Shipper->PhoneNumber)) {
-            $shipperNode->appendChild($xml->createElement('PhoneNumber', $shipment->Shipper->PhoneNumber));
+        if (isset($shipment->getShipper()->PhoneNumber)) {
+            $shipperNode->appendChild($xml->createElement('PhoneNumber', $shipment->getShipper()->getPhoneNumber()));
         }
 
-        if (isset($shipment->Shipper->FaxNumber)) {
-            $shipperNode->appendChild($xml->createElement('FaxNumber', $shipment->Shipper->FaxNumber));
+        if (isset($shipment->getShipper()->FaxNumber)) {
+            $shipperNode->appendChild($xml->createElement('FaxNumber', $shipment->getShipper()->getFaxNumber()));
         }
 
-        if (isset($shipment->Shipper->EMailAddress)) {
-            $shipperNode->appendChild($xml->createElement('EMailAddress', $shipment->Shipper->EMailAddress));
+        if (isset($shipment->getShipper()->EMailAddress)) {
+            $shipperNode->appendChild($xml->createElement('EMailAddress', $shipment->getShipper()->getEmailAddress()));
         }
 
-        $addressNode = $xml->importNode($this->compileAddressNode($shipment->Shipper->Address), true);
+        $addressNode = $xml->importNode($this->compileAddressNode($shipment->getShipper()->getAddress()), true);
         $shipperNode->appendChild($addressNode);
 
         $shipToNode = $shipmentNode->appendChild($xml->createElement('ShipTo'));
 
-        $shipToNode->appendChild($xml->createElement('CompanyName', $shipment->ShipTo->CompanyName));
+        $shipToNode->appendChild($xml->createElement('CompanyName', $shipment->getShipTo()->getCompanyName()));
 
-        if (isset($shipment->ShipTo->AttentionName)) {
-            $shipToNode->appendChild($xml->createElement('AttentionName', $shipment->ShipTo->AttentionName));
+        if ($shipment->getShipTo()->getAttentionName()) {
+            $shipToNode->appendChild($xml->createElement('AttentionName', $shipment->getShipTo()->getAttentionName()));
         }
 
-        if (isset($shipment->ShipTo->PhoneNumber)) {
-            $shipToNode->appendChild($xml->createElement('PhoneNumber', $shipment->ShipTo->PhoneNumber));
+        if ($shipment->getShipTo()->getPhoneNumber()) {
+            $shipToNode->appendChild($xml->createElement('PhoneNumber', $shipment->getShipTo()->getPhoneNumber()));
         }
 
-        if (isset($shipment->ShipTo->FaxNumber)) {
-            $shipToNode->appendChild($xml->createElement('FaxNumber', $shipment->ShipTo->FaxNumber));
+        if ($shipment->getShipTo()->getFaxNumber()) {
+            $shipToNode->appendChild($xml->createElement('FaxNumber', $shipment->getShipTo()->getFaxNumber()));
         }
 
-        if (isset($shipment->ShipTo->EMailAddress)) {
-            $shipToNode->appendChild($xml->createElement('EMailAddress', $shipment->ShipTo->EMailAddress));
+        if ($shipment->getShipTo()->getEmailAddress()) {
+            $shipToNode->appendChild($xml->createElement('EMailAddress', $shipment->getShipTo()->getEmailAddress()));
         }
 
-        $addressNode = $xml->importNode($this->compileAddressNode($shipment->ShipTo->Address), true);
+        $addressNode = $xml->importNode($this->compileAddressNode($shipment->getShipTo()->getAddress()), true);
 
         if (isset($shipment->ShipTo->ResidentialAddress)) {
             $addressNode->appendChild($xml->createElement('ResidentialAddress'));
@@ -283,7 +282,7 @@ class Shipping extends Ups
         }
 
         $serviceNode = $shipmentNode->appendChild($xml->createElement('Service'));
-        $serviceNode->appendChild($xml->createElement('Code', $shipment->Service->Code));
+        $serviceNode->appendChild($xml->createElement('Code', $shipment->getService()->getCode()));
 
         if (isset($shipment->Service->Description)) {
             $serviceNode->appendChild($xml->createElement('Description', $shipment->Service->Description));
@@ -304,6 +303,7 @@ class Shipping extends Ups
         }
 
         foreach ($shipment->Package as &$package) {
+            /** @var Entity\Package $package */
             $node = $shipmentNode->appendChild($xml->createElement('Package'));
 
             $ptNode = $node->appendChild($xml->createElement('PackagingType'));
@@ -330,20 +330,57 @@ class Shipping extends Ups
                 $node->appendChild($xml->createElement('LargePackageIndicator'));
             }
 
-            if (isset($package->ReferenceNumber)) {
-                $refNode = $node->appendChild($xml->createElement('ReferenceNumber'));
 
-                if ($package->ReferenceNumber->BarCodeIndicator) {
-                    $refNode->appendChild($xml->createElement('BarCodeIndicator', $package->ReferenceNumber->BarCodeIndicator));
-                }
-
-                $refNode->appendChild($xml->createElement('Code', $package->ReferenceNumber->Code));
-                $refNode->appendChild($xml->createElement('Value', $package->ReferenceNumber->Value));
-            }
+//            if (isset($package->ReferenceNumber)) {
+//                $refNode = $node->appendChild($xml->createElement('ReferenceNumber'));
+//
+//                if ($package->ReferenceNumber->BarCodeIndicator) {
+//                    $refNode->appendChild($xml->createElement('BarCodeIndicator', $package->ReferenceNumber->BarCodeIndicator));
+//                }
+//
+//                $refNode->appendChild($xml->createElement('Code', $package->ReferenceNumber->Code));
+//                $refNode->appendChild($xml->createElement('Value', $package->ReferenceNumber->Value));
+//            }
 
             if (isset($package->AdditionalHandling)) {
                 $refNode->appendChild($xml->createElement('AdditionalHandling'));
             }
+
+            if ($shipment->getShipmentServiceOptions()) {
+                $sso = $shipmentNode->appendChild($xml->createElement('ShipmentServiceOptions'));
+
+                if (isset($shipment->getShipmentServiceOptions()->COD)) {
+                    $cod = $sso->appendChild($xml->createElement('COD'));
+
+                    $cod->appendChild($xml->createElement('CODCode', 3));
+                    $cod->appendChild($xml->createElement('CODFundsCode', 1));
+
+                    $codamount = $cod->appendChild($xml->createElement('CODAmount'));
+
+                    $codamount->appendChild($xml->createElement('CurrencyCode', $shipment->getShipmentServiceOptions()->COD->CODAmount->CurrencyCode));
+                    $codamount->appendChild($xml->createElement('MonetaryValue', $shipment->getShipmentServiceOptions()->COD->CODAmount->MonetaryValue));
+
+//                    $if = $sso->appendChild($xml->createElement('InternationalForms'));
+//
+//                    $if->appendChild($xml->createElement('FormType', '01'));
+//
+//                    $cn22 = $if->appendChild($xml->createElement('CN22Form'));
+//
+//                    $cn22->appendChild($xml->createElement('LabelSize', '1'));
+//                    $cn22->appendChild($xml->createElement('PrintsPerPage', '1'));
+//                    $cn22->appendChild($xml->createElement('LabelPrintType', 'gif'));
+//                    $cn22->appendChild($xml->createElement('CN22Type', '1'));
+//                    $cn22->appendChild($xml->createElement('FoldHereText', 'Zegnij'));
+//                    $cn22content = $cn22->appendChild($xml->createElement('CN22Content'));
+//                    $cn22content->appendChild($xml->createElement('CN22ContentQuantity', '1'));
+//                    $cn22content->appendChild($xml->createElement('CN22ContentDescription', 'opsi'));
+//                    $cn22cw = $cn22content->appendChild($xml->createElement('CN22ContentWeight'));
+//                    $cn22cwuom = $cn22cw->appendChild($xml->createElement('UnitOfMeasurement'));
+//                    $cn22cwuom->appendChild($xml->createElement('Code', 'lbs'));
+//                    $cn22cw->appendChild($xml->createElement('Weight', '1'));
+                }
+            }
+
         }
 
         if ($labelSpecOpts) {

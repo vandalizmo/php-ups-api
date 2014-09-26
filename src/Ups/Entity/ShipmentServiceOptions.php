@@ -7,6 +7,7 @@ class ShipmentServiceOptions
     public $SaturdayDelivery;
     public $CallTagARS;
     public $NegotiatedRatesIndicator;
+    public $COD;
 
     function __construct($response = null)
     {
