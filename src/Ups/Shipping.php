@@ -51,11 +51,13 @@ class Shipping extends Ups
     public function confirm($validation, $shipment, $labelSpecOpts = null, $receiptSpecOpts = null)
     {
         $request = $this->createConfirmRequest($validation, $shipment, $labelSpecOpts, $receiptSpecOpts);
+
         $response = $this->request($this->createAccess(), $request, $this->compileEndpointUrl($this->shipConfirmEndpoint));
 
         if ($response->Response->ResponseStatusCode == 0) {
             throw new Exception(
-                "Failure ({$response->Response->Error->ErrorCode}: {$response->Response->Error->ErrorSeverity}): {$response->Response->Error->ErrorDescription}",
+                "Failure ({$response->Response->Error->ErrorCode}: {$response->Response->Error->ErrorSeverity}): {$response->Response->Error->ErrorDescription}\n
+                {$response->Response->Error->ErrorLocation} {$response->Response->Error->ErrorLocation->ErrorLocationElementName}",
                 (int)$response->Response->Error->ErrorCode
             );
         } else {
@@ -431,6 +433,9 @@ class Shipping extends Ups
             }
         }
 
+        $nodeRateInformation = $shipmentNode->appendChild($xml->createElement('RateInformation'));
+        $nodeRateInformation->appendChild($xml->createElement('NegotiatedRatesIndicator'));
+
         return $xml->saveXML();
     }
 
@@ -636,6 +641,8 @@ class Shipping extends Ups
             $translate->appendChild($xml->createElement('DialectCode', $translateOpts['dialect']));
             $translate->appendChild($xml->createElement('Code', '01'));
         }
+
+
 
         return $xml->saveXML();
     }
