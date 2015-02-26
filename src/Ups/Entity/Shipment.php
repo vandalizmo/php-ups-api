@@ -18,6 +18,8 @@ class Shipment
     /** @deprecated */
     public $ShipmentServiceOptions;
 
+    public $ReturnService;
+
     /**
      * @var string
      */
