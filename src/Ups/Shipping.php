@@ -51,13 +51,11 @@ class Shipping extends Ups
     public function confirm($validation, $shipment, $labelSpecOpts = null, $receiptSpecOpts = null)
     {
         $request = $this->createConfirmRequest($validation, $shipment, $labelSpecOpts, $receiptSpecOpts);
-
         $response = $this->request($this->createAccess(), $request, $this->compileEndpointUrl($this->shipConfirmEndpoint));
 
         if ($response->Response->ResponseStatusCode == 0) {
             throw new Exception(
-                "Failure ({$response->Response->Error->ErrorCode}: {$response->Response->Error->ErrorSeverity}): {$response->Response->Error->ErrorDescription}\n
-                {$response->Response->Error->ErrorLocation} {$response->Response->Error->ErrorLocation->ErrorLocationElementName}",
+                "Failure ({$response->Response->Error->ErrorCode}: {$response->Response->Error->ErrorSeverity}): {$response->Response->Error->ErrorDescription} ({$response->Response->Error->ErrorLocation->ErrorLocationElementName})",
                 (int)$response->Response->Error->ErrorCode
             );
         } else {
@@ -174,24 +172,24 @@ class Shipping extends Ups
 
         $shipToNode->appendChild($addressNode);
 
-        if (isset($shipment->ShipFrom)) {
+        if ($shipment->getShipFrom()) {
             $shipFromNode = $shipmentNode->appendChild($xml->createElement('ShipFrom'));
 
-            $shipFromNode->appendChild($xml->createElement('CompanyName', $shipment->ShipFrom->CompanyName));
+            $shipFromNode->appendChild($xml->createElement('CompanyName', $shipment->getShipFrom()->getAttentionName()));
 
-            if ($shipment->ShipFrom->AttentionName) {
-                $shipFromNode->appendChild($xml->createElement('AttentionName', $shipment->ShipFrom->AttentionName));
+            if ($shipment->getShipFrom()->getAttentionName()) {
+                $shipFromNode->appendChild($xml->createElement('AttentionName', $shipment->getShipFrom()->getAttentionName()));
             }
 
-            if ($shipment->ShipFrom->PhoneNumber) {
-                $shipFromNode->appendChild($xml->createElement('PhoneNumber', $shipment->ShipFrom->PhoneNumber));
+            if ($shipment->getShipFrom()->getPhoneNumber()) {
+                $shipFromNode->appendChild($xml->createElement('PhoneNumber', $shipment->getShipFrom()->getPhoneNumber()));
             }
 
-            if ($shipment->ShipFrom->FaxNumber) {
-                $shipFromNode->appendChild($xml->createElement('FaxNumber', $shipment->ShipFrom->FaxNumber));
+            if ($shipment->getShipFrom()->getFaxNumber()) {
+                $shipFromNode->appendChild($xml->createElement('FaxNumber', $shipment->getShipFrom()->getFaxNumber()));
             }
 
-            $addressNode = $xml->importNode($this->compileAddressNode($shipment->ShipFrom->Address), true);
+            $addressNode = $xml->importNode($this->compileAddressNode($shipment->getShipFrom()->getAddress()), true);
             $shipFromNode->appendChild($addressNode);
         }
 
@@ -307,6 +305,10 @@ class Shipping extends Ups
         foreach ($shipment->Package as &$package) {
             /** @var Entity\Package $package */
             $node = $shipmentNode->appendChild($xml->createElement('Package'));
+
+            if ($package->getDescription()) {
+                $node->appendChild($xml->createElement('Description', $package->getDescription()));
+            }
 
             $ptNode = $node->appendChild($xml->createElement('PackagingType'));
             $ptNode->appendChild($xml->createElement('Code', $package->PackagingType->Code));
@@ -432,9 +434,6 @@ class Shipping extends Ups
                 $node->appendChild($xml->createElement('Description', $receiptSpecOpts->ImageFormat->Description));
             }
         }
-
-        $nodeRateInformation = $shipmentNode->appendChild($xml->createElement('RateInformation'));
-        $nodeRateInformation->appendChild($xml->createElement('NegotiatedRatesIndicator'));
 
         return $xml->saveXML();
     }
@@ -641,8 +640,6 @@ class Shipping extends Ups
             $translate->appendChild($xml->createElement('DialectCode', $translateOpts['dialect']));
             $translate->appendChild($xml->createElement('Code', '01'));
         }
-
-
 
         return $xml->saveXML();
     }
