@@ -107,6 +107,12 @@ class Shipping extends Ups
             }
         }
 
+        if (isset($shipment->RateInformation)) {
+            $node = $shipmentNode->appendChild($xml->createElement('RateInformation'));
+
+            $node->appendChild($xml->createElement('NegotiatedRatesIndicator'));
+        }
+
         $shipperNode = $shipmentNode->appendChild($xml->createElement('Shipper'));
 
         $shipperNode->appendChild($xml->createElement('Name', $shipment->getShipper()->getName()));
